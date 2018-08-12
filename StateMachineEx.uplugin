@@ -1,0 +1,28 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "StateMachineEx",
+	"Description": "Bluperint State Machine",
+	"Category": "Other",
+	"CreatedBy": "Igor Karatayev",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "StateMachineEx",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "StateMachineDeveloperEx",
+			"Type": "Developer",
+			"LoadingPhase": "Default"
+		}
+	]
+}

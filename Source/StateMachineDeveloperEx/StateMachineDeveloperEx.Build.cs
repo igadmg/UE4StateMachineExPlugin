@@ -7,6 +7,11 @@ public class StateMachineDeveloperEx : ModuleRules
 	public StateMachineDeveloperEx(ReadOnlyTargetRules Target)
 		: base(Target)
 	{
+#if UE_4_21_OR_LATER
+		PrivatePCHHeaderFile = "Private/StateMachineDeveloperExPrivatePCH.h";
+#endif
+
+
 		PublicIncludePaths.AddRange(new string[] {
 				"StateMachineDeveloperEx/Public"
 			});

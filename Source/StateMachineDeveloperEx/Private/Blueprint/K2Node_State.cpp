@@ -67,7 +67,11 @@ void UK2Node_State::AllocateDefaultPins()
 {
 	const UEdGraphSchema_K2* K2Schema = GetDefault<UEdGraphSchema_K2>();
 
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
+	CreatePin(EGPD_Input, K2Schema->PC_Exec, FName(), nullptr, K2Schema->PN_Execute);
+#else
 	CreatePin(EGPD_Input, K2Schema->PC_Exec, FString(), nullptr, K2Schema->PN_Execute);
+#endif
 
 	bool bExposeProxy = false;
 	bool bHideThen = false;
@@ -79,19 +83,31 @@ void UK2Node_State::AllocateDefaultPins()
 
 	if (!bHideThen)
 	{
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
+		CreatePin(EGPD_Output, K2Schema->PC_Exec, FName(), nullptr, K2Schema->PN_Then);
+#else
 		CreatePin(EGPD_Output, K2Schema->PC_Exec, FString(), nullptr, K2Schema->PN_Then);
+#endif
 	}
 
 	if (bExposeProxy)
 	{
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
+		CreatePin(EGPD_Output, K2Schema->PC_Object, FName(), ProxyClass, FBaseAsyncTaskHelper::GetAsyncTaskProxyName());
+#else
 		CreatePin(EGPD_Output, K2Schema->PC_Object, FString(), ProxyClass, FBaseAsyncTaskHelper::GetAsyncTaskProxyName());
+#endif
 	}
 
 	for (TFieldIterator<UProperty> PropertyIt(ProxyClass); PropertyIt; ++PropertyIt)
 	{
 		if (UMulticastDelegateProperty* Property = Cast<UMulticastDelegateProperty>(*PropertyIt))
 		{
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
+			CreatePin(EGPD_Output, K2Schema->PC_Exec, FName(), nullptr, *Property->GetName());
+#else
 			CreatePin(EGPD_Output, K2Schema->PC_Exec, FString(), nullptr, *Property->GetName());
+#endif
 			UFunction* DelegateSignatureFunction = Property->SignatureFunction;
 			if (IsValid(DelegateSignatureFunction))
 			{
@@ -101,7 +117,11 @@ void UK2Node_State::AllocateDefaultPins()
 					const bool bIsFunctionInput = !Param->HasAnyPropertyFlags(CPF_OutParm) || Param->HasAnyPropertyFlags(CPF_ReferenceParm);
 					if (bIsFunctionInput)
 					{
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
+						UEdGraphPin* Pin = CreatePin(EGPD_Output, FName(), FName(), nullptr, Param->GetFName());
+#else
 						UEdGraphPin* Pin = CreatePin(EGPD_Output, FString(), FString(), nullptr, Param->GetName());
+#endif
 						K2Schema->ConvertPropertyToPinType(Param, /*out*/ Pin->PinType);
 					}
 				}
@@ -116,7 +136,7 @@ void UK2Node_State::AllocateDefaultPins()
 #if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
 		TSet<FName> PinsToHide;
 		FBlueprintEditorUtils::GetHiddenPinsForFunction(GetGraph(), Function, PinsToHide);
-#elif ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 18
+#else
 		TSet<FString> PinsToHide;
 		FBlueprintEditorUtils::GetHiddenPinsForFunction(GetGraph(), Function, PinsToHide);
 #endif
@@ -131,7 +151,13 @@ void UK2Node_State::AllocateDefaultPins()
 			}
 
 			const bool bIsRefParam = Param->HasAnyPropertyFlags(CPF_ReferenceParm) && bIsFunctionInput;
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
+			FCreatePinParams PinParams;
+			PinParams.bIsReference = bIsRefParam;
+			UEdGraphPin* Pin = CreatePin(EGPD_Input, FName(), FName(), nullptr, Param->GetFName(), PinParams);
+#else
 			UEdGraphPin* Pin = CreatePin(EGPD_Input, FString(), FString(), nullptr, Param->GetName(), EPinContainerType::None, bIsRefParam);
+#endif
 			const bool bPinGood = (Pin != NULL) && K2Schema->ConvertPropertyToPinType(Param, /*out*/ Pin->PinType);
 
 			if (bPinGood)
@@ -188,7 +214,11 @@ void UK2Node_State::AllocateDefaultPins()
 			Property->HasAllPropertyFlags(CPF_BlueprintVisible) &&
 			!bIsDelegate)
 		{
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
+			UEdGraphPin* Pin = CreatePin(EGPD_Input, FName(), FName(), nullptr, Property->GetFName());
+#else
 			UEdGraphPin* Pin = CreatePin(EGPD_Input, FString(), FString(), nullptr, Property->GetName());
+#endif
 			const bool bPinGood = (Pin != nullptr) && K2Schema->ConvertPropertyToPinType(Property, /*out*/ Pin->PinType);
 
 			// Copy tooltip from the property.
@@ -218,9 +248,19 @@ void UK2Node_State::ExpandNode(class FKismetCompilerContext& CompilerContext, UE
 	CallCreateProxyObjectNode->AllocateDefaultPins();
 	if (CallCreateProxyObjectNode->GetTargetFunction() == nullptr)
 	{
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 20
+		const FText ClassName = ProxyFactoryClass ? FText::FromString(ProxyFactoryClass->GetName()) : LOCTEXT("MissingClassString", "Unknown Class");
+		const FString FormattedMessage = FText::Format(
+			LOCTEXT("AsyncTaskErrorFmt", "State: Missing function {0} from class {1} for async task @@"),
+			FText::FromString(ProxyFactoryFunctionName.GetPlainNameString()),
+			ClassName
+		).ToString();
+#else
 		const FString ClassName = ProxyFactoryClass ? ProxyFactoryClass->GetName() : LOCTEXT("MissingClassString", "Unknown Class").ToString();
-		const FString RawMessage = LOCTEXT("AsyncTaskError", "BaseAsyncTask: Missing function %s from class %s for async task @@").ToString();
+		const FString RawMessage = LOCTEXT("AsyncTaskError", "State: Missing function %s from class %s for async task @@").ToString();
 		const FString FormattedMessage = FString::Printf(*RawMessage, *ProxyFactoryFunctionName.GetPlainNameString(), *ClassName);
+#endif
+
 		CompilerContext.MessageLog.Error(*FormattedMessage, this);
 		return;
 	}
@@ -231,7 +271,7 @@ void UK2Node_State::ExpandNode(class FKismetCompilerContext& CompilerContext, UE
 	{
 #if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
 		if (FBaseAsyncTaskHelper::ValidDataPin(CurrentPin, EGPD_Input))
-#elif ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 18
+#else
 		if (FBaseAsyncTaskHelper::ValidDataPin(CurrentPin, EGPD_Input, Schema))
 #endif
 		{
@@ -254,7 +294,7 @@ void UK2Node_State::ExpandNode(class FKismetCompilerContext& CompilerContext, UE
 	{
 #if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
 		if ((OutputAsyncTaskProxy != CurrentPin) && FBaseAsyncTaskHelper::ValidDataPin(CurrentPin, EGPD_Output))
-#elif ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 18
+#else
 		if ((OutputAsyncTaskProxy != CurrentPin) && FBaseAsyncTaskHelper::ValidDataPin(CurrentPin, EGPD_Output, Schema))
 #endif
 		{
@@ -325,7 +365,7 @@ void UK2Node_State::ExpandNode(class FKismetCompilerContext& CompilerContext, UE
 				UEdGraphPin* PropertyNamePin = SetVarNode->FindPinChecked(PropertyNameParamName);
 #if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
 				PropertyNamePin->DefaultValue = SpawnVarPin->PinName.ToString();
-#elif ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 18
+#else
 				PropertyNamePin->DefaultValue = SpawnVarPin->PinName;
 #endif
 

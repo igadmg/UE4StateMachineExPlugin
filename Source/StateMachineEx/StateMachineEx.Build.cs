@@ -1,3 +1,4 @@
+using System.IO;
 using UnrealBuildTool;
 
 
@@ -12,12 +13,12 @@ public class StateMachineEx : ModuleRules
 #endif
 
 		PublicIncludePaths.AddRange(new string[] {
-				"StateMachineEx/Public"
+				Path.Combine(ModuleDirectory, "Public"),
 			});
 
 
 		PrivateIncludePaths.AddRange(new string[] {
-				"StateMachineEx/Private",
+				Path.Combine(ModuleDirectory, "Private"),
 			});
 
 

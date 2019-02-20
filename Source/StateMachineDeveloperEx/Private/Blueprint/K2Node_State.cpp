@@ -13,6 +13,7 @@
 #include "K2Node_IfThenElse.h"
 #include "K2Node_TemporaryVariable.h"
 
+#include "Runtime/Launch/Resources/Version.h"
 
 #define LOCTEXT_NAMESPACE "FStateMachineDeveloperExModule"
 
@@ -112,8 +113,13 @@ void UK2Node_State::AllocateDefaultPins()
 	UFunction* Function = ProxyFactoryClass ? ProxyFactoryClass->FindFunctionByName(ProxyFactoryFunctionName) : nullptr;
 	if (Function)
 	{
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
 		TSet<FName> PinsToHide;
 		FBlueprintEditorUtils::GetHiddenPinsForFunction(GetGraph(), Function, PinsToHide);
+#elif ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 18
+		TSet<FString> PinsToHide;
+		FBlueprintEditorUtils::GetHiddenPinsForFunction(GetGraph(), Function, PinsToHide);
+#endif
 		for (TFieldIterator<UProperty> PropIt(Function); PropIt && (PropIt->PropertyFlags & CPF_Parm); ++PropIt)
 		{
 			UProperty* Param = *PropIt;
@@ -223,7 +229,11 @@ void UK2Node_State::ExpandNode(class FKismetCompilerContext& CompilerContext, UE
 
 	for (auto CurrentPin : Pins)
 	{
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
 		if (FBaseAsyncTaskHelper::ValidDataPin(CurrentPin, EGPD_Input))
+#elif ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 18
+		if (FBaseAsyncTaskHelper::ValidDataPin(CurrentPin, EGPD_Input, Schema))
+#endif
 		{
 			UEdGraphPin* DestPin = CallCreateProxyObjectNode->FindPin(CurrentPin->PinName); // match function inputs, to pass data to function from CallFunction node
 			if (DestPin != nullptr)
@@ -242,7 +252,11 @@ void UK2Node_State::ExpandNode(class FKismetCompilerContext& CompilerContext, UE
 	TArray<FBaseAsyncTaskHelper::FOutputPinAndLocalVariable> VariableOutputs;
 	for (auto CurrentPin : Pins)
 	{
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
 		if ((OutputAsyncTaskProxy != CurrentPin) && FBaseAsyncTaskHelper::ValidDataPin(CurrentPin, EGPD_Output))
+#elif ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 18
+		if ((OutputAsyncTaskProxy != CurrentPin) && FBaseAsyncTaskHelper::ValidDataPin(CurrentPin, EGPD_Output, Schema))
+#endif
 		{
 			const FEdGraphPinType& PinType = CurrentPin->PinType;
 			UK2Node_TemporaryVariable* TempVarOutput = CompilerContext.SpawnInternalVariable(
@@ -309,7 +323,11 @@ void UK2Node_State::ExpandNode(class FKismetCompilerContext& CompilerContext, UE
 
 				// Fill in literal for 'property name' pin - name of pin is property name
 				UEdGraphPin* PropertyNamePin = SetVarNode->FindPinChecked(PropertyNameParamName);
+#if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
 				PropertyNamePin->DefaultValue = SpawnVarPin->PinName.ToString();
+#elif ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 18
+				PropertyNamePin->DefaultValue = SpawnVarPin->PinName;
+#endif
 
 				// Move connection from the variable pin on the spawn node to the 'value' pin
 				UEdGraphPin* ValuePin = SetVarNode->FindPinChecked(ValueParamName);

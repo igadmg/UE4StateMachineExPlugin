@@ -30,10 +30,10 @@ public:
 
 public:
 	UFUNCTION(Category = "State Machine", BlueprintCallable, BlueprintPure)
-	class APlayerController* GetOwningPlayer() const;
+	virtual class APlayerController* GetOwningPlayer() const;
 
 	UFUNCTION(Category = "State Machine", BlueprintCallable, BlueprintPure)
-	class APawn* GetOwningPlayerPawn() const;
+	virtual class APawn* GetOwningPlayerPawn() const;
 
 
 

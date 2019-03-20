@@ -4,7 +4,7 @@
 
 
 
-UCLASS(blueprintable, BlueprintType)
+UCLASS(abstract, blueprintable, BlueprintType)
 class STATEMACHINEEX_API UState : public UObject
 {
 	GENERATED_BODY()

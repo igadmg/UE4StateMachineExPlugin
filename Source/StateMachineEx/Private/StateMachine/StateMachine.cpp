@@ -31,7 +31,7 @@ UState* UStateMachine::SwitchState(TSubclassOf<UState> NewStateClass)
 	return SwitchState(NewState);
 }
 
-UState* UStateMachine::SwitchState(class UState* NewState)
+UState* UStateMachine::SwitchState(UState* NewState)
 {
 	if (IsValid(CurrentState))
 	{

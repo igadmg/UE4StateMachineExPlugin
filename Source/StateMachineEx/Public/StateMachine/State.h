@@ -20,7 +20,7 @@ public:
 	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
 	uint8 StateId;
 
-	UPROPERTY(Category = "State Machine", VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
 	class UStateMachine *ParentStateMachine;
 
 	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadWrite)

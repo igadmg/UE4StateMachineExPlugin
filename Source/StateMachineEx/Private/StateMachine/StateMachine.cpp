@@ -41,7 +41,17 @@ UState* UStateMachine::SwitchState(UState* NewState)
 	CurrentState = nullptr;
 	NextState = NewState;
 
-	return NextState;
+	if (bImmediateStateChange)
+	{
+		if (IsValid(NextState))
+		{
+			CurrentState = NextState;
+			NextState = nullptr;
+			CurrentState->Enter();
+		}
+	}
+
+	return NewState;
 }
 
 void UStateMachine::Restart()

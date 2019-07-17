@@ -26,6 +26,8 @@ public class StateMachineDeveloperEx : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] {
 				"BlueprintGraph",
 				"Core",
+				"CoreUObject",
+				"Engine",
 				"UnrealEd",
 			});
 
@@ -34,8 +36,6 @@ public class StateMachineDeveloperEx : ModuleRules
 
 
 		PrivateDependencyModuleNames.AddRange(new string[] {
-				"CoreUObject",
-				"Engine",
 				"KismetCompiler",
 			});
 

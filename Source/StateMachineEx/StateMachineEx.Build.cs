@@ -24,6 +24,8 @@ public class StateMachineEx : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] {
 				"Core",
+				"CoreUObject",
+				"Engine",
 			});
 
 		PublicDependencyModuleNames.AddRange(new string[] {
@@ -31,8 +33,6 @@ public class StateMachineEx : ModuleRules
 
 
 		PrivateDependencyModuleNames.AddRange(new string[] {
-				"CoreUObject",
-				"Engine",
 			});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {

@@ -20,6 +20,9 @@ public:
 	UPROPERTY(Category = "State Machine", EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class UState> ShutdownState;
 
+	UPROPERTY(Category = "State Machine", EditAnywhere, BlueprintReadOnly)
+	bool bImmediateStateChange = false;
+
 	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
 	class UState *CurrentState;
 
@@ -29,7 +32,6 @@ public:
 	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
 	TArray<class UState*> StateStack;
 
-	
 
 public:
 	UFUNCTION(Category = "State Machine", BlueprintCallable)

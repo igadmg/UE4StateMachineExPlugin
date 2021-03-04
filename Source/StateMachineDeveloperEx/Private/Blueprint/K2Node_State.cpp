@@ -1,5 +1,3 @@
-#include "StateMachineDeveloperExPrivatePCH.h"
-
 #include "Blueprint/K2Node_State.h"
 #include "Blueprint/CreateStateAsyncTask.h"
 #include "StateMachine/State.h"
@@ -100,9 +98,9 @@ void UK2Node_State::AllocateDefaultPins()
 #endif
 	}
 
-	for (TFieldIterator<UProperty> PropertyIt(ProxyClass); PropertyIt; ++PropertyIt)
+	for (TFieldIterator<FProperty> PropertyIt(ProxyClass); PropertyIt; ++PropertyIt)
 	{
-		if (UMulticastDelegateProperty* Property = Cast<UMulticastDelegateProperty>(*PropertyIt))
+		if (auto* Property = CastField<FMulticastDelegateProperty>(*PropertyIt))
 		{
 #if ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 19
 			CreatePin(EGPD_Output, K2Schema->PC_Exec, FName(), nullptr, *Property->GetName());
@@ -112,9 +110,9 @@ void UK2Node_State::AllocateDefaultPins()
 			UFunction* DelegateSignatureFunction = Property->SignatureFunction;
 			if (IsValid(DelegateSignatureFunction))
 			{
-				for (TFieldIterator<UProperty> PropIt(DelegateSignatureFunction); PropIt && (PropIt->PropertyFlags & CPF_Parm); ++PropIt)
+				for (TFieldIterator<FProperty> PropIt(DelegateSignatureFunction); PropIt && (PropIt->PropertyFlags & CPF_Parm); ++PropIt)
 				{
-					UProperty* Param = *PropIt;
+					auto* Param = *PropIt;
 					const bool bIsFunctionInput = !Param->HasAnyPropertyFlags(CPF_OutParm) || Param->HasAnyPropertyFlags(CPF_ReferenceParm);
 					if (bIsFunctionInput)
 					{
@@ -141,9 +139,9 @@ void UK2Node_State::AllocateDefaultPins()
 		TSet<FString> PinsToHide;
 		FBlueprintEditorUtils::GetHiddenPinsForFunction(GetGraph(), Function, PinsToHide);
 #endif
-		for (TFieldIterator<UProperty> PropIt(Function); PropIt && (PropIt->PropertyFlags & CPF_Parm); ++PropIt)
+		for (TFieldIterator<FProperty> PropIt(Function); PropIt && (PropIt->PropertyFlags & CPF_Parm); ++PropIt)
 		{
-			UProperty* Param = *PropIt;
+			auto* Param = *PropIt;
 			const bool bIsFunctionInput = !Param->HasAnyPropertyFlags(CPF_OutParm) || Param->HasAnyPropertyFlags(CPF_ReferenceParm);
 			if (!bIsFunctionInput)
 			{
@@ -201,11 +199,11 @@ void UK2Node_State::AllocateDefaultPins()
 	StateClassPin->bHidden = true;
 	StateClassPin->DefaultObject = StateClass;
 
-	for (TFieldIterator<UProperty> PropertyIt(StateClass, EFieldIteratorFlags::IncludeSuper); PropertyIt; ++PropertyIt)
+	for (TFieldIterator<FProperty> PropertyIt(StateClass, EFieldIteratorFlags::IncludeSuper); PropertyIt; ++PropertyIt)
 	{
-		UProperty* Property = *PropertyIt;
-		UClass* PropertyClass = CastChecked<UClass>(Property->GetOuter());
-		const bool bIsDelegate = Property->IsA(UMulticastDelegateProperty::StaticClass());
+		auto* Property = *PropertyIt;
+		//UClass* PropertyClass = CastChecked<UClass>(Property->GetOuter());
+		const bool bIsDelegate = Property->IsA(FMulticastDelegateProperty::StaticClass());
 		const bool bIsExposedToSpawn = UEdGraphSchema_K2::IsPropertyExposedOnSpawn(Property);
 		const bool bIsSettableExternally = !Property->HasAnyPropertyFlags(CPF_DisableEditOnInstance);
 
@@ -384,7 +382,7 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 		}
 	}
 
-	for (TFieldIterator<UMulticastDelegateProperty> PropertyIt(ProxyClass, EFieldIteratorFlags::IncludeSuper); PropertyIt && bIsErrorFree; ++PropertyIt)
+	for (TFieldIterator<FMulticastDelegateProperty> PropertyIt(ProxyClass, EFieldIteratorFlags::IncludeSuper); PropertyIt && bIsErrorFree; ++PropertyIt)
 	{
 		bIsErrorFree &= FBaseAsyncTaskHelper::HandleDelegateImplementation(*PropertyIt, VariableOutputs, ProxyObjectPin, LastThenPin, this, SourceGraph, CompilerContext);
 	}

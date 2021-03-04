@@ -1,6 +1,4 @@
-#include "StateMachineDeveloperExPrivatePCH.h"
-#include "Core.h"
-#include "ModuleManager.h"
+#include "StateMachineDeveloperEx.h"
 
 
 

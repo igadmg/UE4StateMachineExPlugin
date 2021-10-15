@@ -21,8 +21,14 @@
 		},
 		{
 			"Name": "StateMachineDeveloperEx",
-			"Type": "Developer",
+			"Type": "UncookedOnly",
 			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "UnrealEngineEx",
+			"Enabled": true
 		}
 	]
 }

@@ -16,7 +16,18 @@ UStateMachine* UStateMachineExStatics::GuessStateMachine(UObject* WorldContextOb
 		if (ObjecProperty->PropertyClass == UStateMachine::StaticClass()
 			|| ObjecProperty->PropertyClass->IsChildOf(UStateMachine::StaticClass()))
 		{
-			return Cast<UStateMachine>(ObjecProperty->GetPropertyValue_InContainer(WorldContextObject));
+			StateMachine = Cast<UStateMachine>(ObjecProperty->GetPropertyValue_InContainer(WorldContextObject));
+
+			if (!IsValid(StateMachine))
+			{
+				StateMachine = NewObject<UStateMachine>(WorldContextObject, ObjecProperty->PropertyClass);
+				if (auto AsActor = Cast<AActor>(WorldContextObject))
+				{
+					//AsActor->Tick
+				}
+			}
+
+			return StateMachine;
 		}
 	}
 
@@ -41,8 +52,28 @@ void UStateMachineExStatics::PopState(UObject* WorldContextObject)
 	if (!IsValid(StateMachine))
 		return;
 
-	if (StateMachine->StateStack.Num()  == 0)
-		return;
+	if (StateMachine->StateStack.Num() > 0)
+	{
+		StateMachine->SwitchState(StateMachine->StateStack.Pop());
+	}
+	else
+	{
+		StateMachine->SwitchState(nullptr);
+	}
+}
 
-	StateMachine->SwitchState(StateMachine->StateStack.Pop());
+UObject* UStateMachineExStatics::CreateStateObject(UObject* WorldContextObject, UClass* StateClass)
+{
+	if (!IsValid(WorldContextObject) || !IsValid(StateClass))
+		return nullptr;
+
+	UStateMachine* StateMachine = UStateMachineExStatics::GuessStateMachine(WorldContextObject);
+	if (!IsValid(StateMachine))
+	{
+		UE_LOG(LogStateMachineExCriticalErrors, Error, TEXT("State %s is spawn without State Machine context in object %s"), *StateClass->GetClass()->GetName(), *WorldContextObject->GetClass()->GetName());
+
+		return nullptr;
+	}
+
+	return StateMachine->PrepareState(StateClass);
 }

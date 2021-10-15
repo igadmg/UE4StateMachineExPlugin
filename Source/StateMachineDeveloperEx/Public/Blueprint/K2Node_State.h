@@ -13,10 +13,18 @@ class STATEMACHINEDEVELOPEREX_API UK2Node_State : public UK2Node_BaseAsyncTask
 	GENERATED_BODY()
 
 
+	struct STATEMACHINEDEVELOPEREX_API FStateHelper : public FBaseAsyncTaskHelper
+	{
+		static bool HandleDelegateImplementation(
+			FMulticastDelegateProperty* CurrentProperty, const TArray<FStateHelper::FOutputPinAndLocalVariable>& VariableOutputs,
+			UEdGraphPin* ProxyObjectPin, UClass* ProxyClass, UEdGraphPin*& InOutLastThenPin,
+			class FK2NodeCompilerHelper& Compiler);
+	};
+
 
 public:
-	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UState> StateClass;
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly, meta = (MustImplement = "StateInterface"))
+	TSubclassOf<class UObject> StateClass;
 
 
 

@@ -18,19 +18,19 @@ public:
 
 public:
 	UPROPERTY(Category = "State Machine", EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UState> ShutdownState;
+	TSubclassOf<class UObject> ShutdownState;
 
 	UPROPERTY(Category = "State Machine", EditAnywhere, BlueprintReadOnly)
 	bool bImmediateStateChange = false;
 
 	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
-	class UState *CurrentState;
+	class UObject *CurrentState;
 
 	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
-	class UState *NextState;
+	class UObject *NextState;
 
 	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
-	TArray<class UState*> StateStack;
+	TArray<class UObject*> StateStack;
 
 
 public:
@@ -49,11 +49,13 @@ public:
 	UFUNCTION(Category = "State Machine", BlueprintCallable, BlueprintNativeEvent)
 	void Shutdown();
 
+	UFUNCTION(Category = "State Machine", BlueprintCallable)
+	UObject* SwitchState(class UObject* NewState);
 
 
 public:
 	UStateMachine(const FObjectInitializer& ObjectInitializer);
 
-	UState* SwitchState(TSubclassOf<class UState> NewStateClass);
-	UState* SwitchState(class UState* NewState);
+	UObject* PrepareState(TSubclassOf<class UObject> NewStateClass);
+	UObject* SwitchStateByClass(TSubclassOf<class UObject> NewStateClass);
 };

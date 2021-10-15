@@ -44,6 +44,7 @@ public class StateMachineDeveloperEx : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] {
 				"StateMachineEx",
+				"UnrealDeveloperEx",
 			});
 
 

@@ -29,19 +29,35 @@ APawn* UState::GetOwningPlayerPawn() const
 		: nullptr;
 }
 
-void UState::Enter_Implementation()
+UObject* UState::ConstructState_Implementation(UStateMachine* StateMachine)
 {
+	UState* NewState = NewObject<UState>(StateMachine, GetClass());
+	NewState->ParentStateMachine = StateMachine;
+
+	return NewState;
 }
 
-void UState::Tick_Implementation(float DeltaTime)
+void UState::EnterState_Implementation()
 {
+	Status = EStateStatus::Entered;
+
+	UE_LOG(LogStateMachineEx, Verbose, TEXT("Entering state %s State Machine %s"), *GetClass()->GetName(), *ParentStateMachine->GetClass()->GetName());
 }
 
-void UState::Exit_Implementation()
+void UState::TickState_Implementation(float DeltaTime)
 {
+	Status = EStateStatus::Updated;
+}
+
+void UState::ExitState_Implementation()
+{
+	Status = EStateStatus::Exited;
+
+	UE_LOG(LogStateMachineEx, Verbose, TEXT("Exiting state %s State Machine %s"), *GetClass()->GetName(), *ParentStateMachine->GetClass()->GetName());
 }
 
 void UState::Restart_Implementation()
 {
-	ParentStateMachine->SwitchState(GetClass());
+	Status = EStateStatus::Restarted;
+	ParentStateMachine->SwitchStateByClass(GetClass());
 }

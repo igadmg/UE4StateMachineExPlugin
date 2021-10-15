@@ -16,4 +16,4 @@ DECLARE_LOG_CATEGORY_EXTERN(LogStateMachineEx, Log, All);
 //DECLARE_LOG_CATEGORY_EXTERN(LogStateMachineExInit, Log, All);
 
 //Logging for Critical Errors that must always be addressed
-//DECLARE_LOG_CATEGORY_EXTERN(LogStateMachineExCriticalErrors, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogStateMachineExCriticalErrors, Log, All);

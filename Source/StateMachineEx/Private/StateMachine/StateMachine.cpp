@@ -1,6 +1,6 @@
-#include "StateMachineExPrivatePCH.h"
 #include "StateMachine/StateMachine.h"
 
+#include "StateMachine/StateInterface.h"
 #include "StateMachine/State.h"
 
 
@@ -23,31 +23,64 @@ bool UStateMachine::IsActive() const
 	return IsValid(CurrentState) || IsValid(NextState);
 }
 
-UState* UStateMachine::SwitchState(TSubclassOf<UState> NewStateClass)
+UObject* UStateMachine::PrepareState(TSubclassOf<UObject> NewStateClass)
 {
-	UState* NewState = NewObject<UState>(this, NewStateClass);
-	NewState->ConstructState(this);
+	return IStateInterface::Execute_ConstructState(GetMutableDefault<UObject>(NewStateClass), this);
+}
 
+UObject* UStateMachine::SwitchStateByClass(TSubclassOf<UObject> NewStateClass)
+{
+	auto NewState = PrepareState(NewStateClass);
 	return SwitchState(NewState);
 }
 
-UState* UStateMachine::SwitchState(UState* NewState)
+UObject* UStateMachine::SwitchState(UObject* NewState)
 {
+	bool bCurrentStateWasExitedBefore = true;
 	if (IsValid(CurrentState))
 	{
-		CurrentState->Exit();
+		auto CurrentStateStatus = IStateInterface::Execute_GetStatus(CurrentState);
+		if (CurrentStateStatus != EStateStatus::Exited
+			&& CurrentStateStatus != EStateStatus::Inactive)
+		{
+			UE_LOG(LogStateMachineEx, Verbose, TEXT("State Machine %s exiting state %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
+
+			bCurrentStateWasExitedBefore = false;
+			IStateInterface::Execute_ExitState(CurrentState);
+
+#if !UE_BUILD_SHIPPING
+			if (CurrentState != nullptr && IStateInterface::Execute_GetStatus(CurrentState) != EStateStatus::Exited)
+			{
+				UE_LOG(LogStateMachineExCriticalErrors, Error, TEXT("State Machine %s UState::Exit base function was not called by %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
+			}
+#endif
+		}
+		else
+		{
+			IStateInterface::Execute_SetStatus(CurrentState, EStateStatus::Inactive);
+		}
 	}
 
 	CurrentState = nullptr;
 	NextState = NewState;
 
-	if (bImmediateStateChange)
+	if (bImmediateStateChange || bCurrentStateWasExitedBefore)
 	{
 		if (IsValid(NextState))
 		{
 			CurrentState = NextState;
 			NextState = nullptr;
-			CurrentState->Enter();
+
+			UE_LOG(LogStateMachineEx, Verbose, TEXT("State Machine %s entering state %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
+
+			IStateInterface::Execute_EnterState(CurrentState);
+
+#if !UE_BUILD_SHIPPING
+			if (CurrentState != nullptr && IStateInterface::Execute_GetStatus(CurrentState) != EStateStatus::Entered)
+			{
+				UE_LOG(LogStateMachineExCriticalErrors, Error, TEXT("State Machine %s UState::Enter base function was not called by %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
+			}
+#endif
 		}
 	}
 
@@ -74,16 +107,31 @@ void UStateMachine::Tick_Implementation(float DeltaSeconds)
 			return;
 		}
 
-		UE_LOG(LogStateMachineEx, Log, TEXT("State Machine %s switched to state %s."), *GetClass()->GetName(), *NextState->GetClass()->GetName());
+		UE_LOG(LogStateMachineEx, Verbose, TEXT("State Machine %s switched to state %s."), *GetClass()->GetName(), *NextState->GetClass()->GetName());
 
 		CurrentState = NextState;
 		NextState = nullptr;
-		CurrentState->Enter();
+		IStateInterface::Execute_EnterState(CurrentState);
+
+#if !UE_BUILD_SHIPPING
+		if (CurrentState != nullptr && IStateInterface::Execute_GetStatus(CurrentState) != EStateStatus::Entered)
+		{
+			UE_LOG(LogStateMachineExCriticalErrors, Error, TEXT("State Machine %s UState::Enter base function was not called by %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
+		}
+#endif
 	}
 
-	if (!CurrentState->bPaused)
+	auto CurrentStateStatus = IStateInterface::Execute_GetStatus(CurrentState);
+	if (CurrentStateStatus == EStateStatus::Entered || CurrentStateStatus == EStateStatus::Updated)
 	{
-		CurrentState->Tick(DeltaSeconds);
+		IStateInterface::Execute_TickState(CurrentState, DeltaSeconds);
+
+#if !UE_BUILD_SHIPPING
+		if (CurrentState != nullptr && IStateInterface::Execute_GetStatus(CurrentState) != EStateStatus::Updated)
+		{
+			UE_LOG(LogStateMachineExCriticalErrors, Error, TEXT("State Machine %s UState::Tick base function was not called by %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
+		}
+#endif
 	}
 }
 
@@ -93,12 +141,19 @@ void UStateMachine::Shutdown_Implementation()
 	{
 		if (IsValid(ShutdownState))
 		{
-			SwitchState(ShutdownState);
+			SwitchStateByClass(ShutdownState);
 			Tick(GetWorld() ? GetWorld()->GetDeltaSeconds() : 0);
 		}
 		if (IsValid(CurrentState))
 		{
-			CurrentState->Exit();
+			IStateInterface::Execute_ExitState(CurrentState);
+
+#if !UE_BUILD_SHIPPING
+			if (CurrentState != nullptr && IStateInterface::Execute_GetStatus(CurrentState) != EStateStatus::Exited)
+			{
+				UE_LOG(LogStateMachineExCriticalErrors, Error, TEXT("State Machine %s UState::Exit base function was not called by %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
+			}
+#endif
 		}
 	}
 

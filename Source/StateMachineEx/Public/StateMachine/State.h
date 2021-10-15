@@ -1,19 +1,21 @@
 #pragma once
 
+#include "StateMachine/StateInterface.h"
+
 #include "State.generated.h"
 
 
 
 UCLASS(abstract, blueprintable, BlueprintType)
-class STATEMACHINEEX_API UState : public UObject
+class STATEMACHINEEX_API UState
+	: public UObject
+	, public IStateInterface
 {
 	GENERATED_BODY()
 
 
-
 public:
 	virtual class UWorld* GetWorld() const override;
-
 
 
 public:
@@ -21,11 +23,13 @@ public:
 	uint8 StateId;
 
 	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
+	EStateStatus Status = EStateStatus::Inactive;
+
+	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
 	class UStateMachine *ParentStateMachine;
 
 	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadWrite)
 	bool bPaused;
-
 
 
 public:
@@ -36,27 +40,18 @@ public:
 	virtual class APawn* GetOwningPlayerPawn() const;
 
 
-
-public:
-	UFUNCTION(Category = "State Machine: State", BlueprintNativeEvent, BlueprintCallable)
-	void Enter();
-
-	UFUNCTION(Category = "State Machine: State", BlueprintNativeEvent, BlueprintCallable)
-	void Tick(float DeltaSeconds);
-
-	UFUNCTION(Category = "State Machine: State", BlueprintNativeEvent, BlueprintCallable)
-	void Exit();
-
-	UFUNCTION(Category = "State Machine: State", BlueprintNativeEvent, BlueprintCallable)
-	void Restart();
-
-
-
 public:
 	UState(const FObjectInitializer& ObjectInitializer);
 
-	virtual void ConstructState(class UStateMachine *StateMachine)
-	{
-		ParentStateMachine = StateMachine;
-	}
+
+protected:
+	virtual UObject* ConstructState_Implementation(class UStateMachine* StateMachine) override;
+	virtual class UStateMachine* GetParentStateMachine_Implementation() const override { return ParentStateMachine; }
+	virtual uint8 GetStateId_Implementation() const override { return StateId; }
+	virtual EStateStatus GetStatus_Implementation() const override { return bPaused ? EStateStatus::Paused : Status; }
+	virtual void SetStatus_Implementation(EStateStatus InStatus) override { Status = InStatus; }
+	virtual void EnterState_Implementation() override;
+	virtual void TickState_Implementation(float DeltaSeconds) override;
+	virtual void ExitState_Implementation() override;
+	virtual void Restart_Implementation() override;
 };

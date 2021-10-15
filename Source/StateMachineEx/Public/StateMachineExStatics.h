@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Kismet/BlueprintFunctionLibrary.h"
+
 #include "StateMachineExStatics.generated.h"
 
 
@@ -12,14 +14,15 @@ class STATEMACHINEEX_API UStateMachineExStatics : public UBlueprintFunctionLibra
 
 
 public:
+	UFUNCTION(Category = "StateMachineEx", BlueprintPure, meta = (HidePin = "WorldContextObject", WorldContext = "WorldContextObject"))
 	static class UStateMachine* GuessStateMachine(UObject* WorldContextObject);
 
-
-
-public:
 	UFUNCTION(Category = "StateMachineEx", BlueprintCallable, meta = (HidePin = "WorldContextObject", WorldContext = "WorldContextObject"))
 	static void PushState(UObject* WorldContextObject);
 
 	UFUNCTION(Category = "StateMachineEx", BlueprintCallable, meta = (HidePin = "WorldContextObject", WorldContext = "WorldContextObject"))
 	static void PopState(UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject"))
+	static class UObject* CreateStateObject(UObject* WorldContextObject, UClass* StateClass);
 };

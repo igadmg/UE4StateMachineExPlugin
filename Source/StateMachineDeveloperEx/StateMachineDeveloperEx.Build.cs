@@ -9,6 +9,9 @@ public class StateMachineDeveloperEx : ModuleRules
 		: base(Target)
 	{
 #if UE_4_21_OR_LATER
+#if UE_4_24_OR_LATER
+		DefaultBuildSettings = BuildSettingsVersion.V2;
+#endif
 		PrivatePCHHeaderFile = "Private/StateMachineDeveloperExPrivatePCH.h";
 #endif
 
@@ -41,6 +44,7 @@ public class StateMachineDeveloperEx : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] {
 				"StateMachineEx",
+				"UnrealDeveloperEx",
 			});
 
 

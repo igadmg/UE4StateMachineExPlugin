@@ -1,5 +1,5 @@
 #include "StateMachineDeveloperEx.h"
-
+#include "StateMachineDeveloperExPrivatePCH.h"
 
 
 #define LOCTEXT_NAMESPACE "FStateMachineDeveloperExModule"

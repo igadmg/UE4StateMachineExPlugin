@@ -1,5 +1,7 @@
 #pragma once
 
+#include "UObject/Object.h"
+
 #include "StateMachine.generated.h"
 
 
@@ -17,19 +19,19 @@ public:
 
 
 public:
-	UPROPERTY(Category = "State Machine", EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UObject> ShutdownState;
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UObject> ShutdownState;
 
-	UPROPERTY(Category = "State Machine", EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly)
 	bool bImmediateStateChange = false;
 
-	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
+	UPROPERTY(Category = "State", VisibleInstanceOnly, BlueprintReadOnly)
 	class UObject *CurrentState;
 
-	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
+	UPROPERTY(Category = "State", VisibleInstanceOnly, BlueprintReadOnly)
 	class UObject *NextState;
 
-	UPROPERTY(Category = "State Machine", VisibleInstanceOnly, BlueprintReadOnly)
+	UPROPERTY(Category = "State", VisibleInstanceOnly, BlueprintReadOnly)
 	TArray<class UObject*> StateStack;
 
 

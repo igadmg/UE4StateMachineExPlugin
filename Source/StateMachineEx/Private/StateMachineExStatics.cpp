@@ -1,9 +1,17 @@
 #include "StateMachineExStatics.h"
+#include "StateMachineExPrivatePCH.h"
 
 #include "StateMachine/StateMachine.h"
 #include "StateMachine/State.h"
 
+#include "ValidEx.h"
 
+
+
+UStateMachine* UStateMachineExStatics::SpawnStateMachine(UObject* Owner, TSubclassOf<UStateMachine> StateMachineClass)
+{
+	return NewObject<UStateMachine>(Owner, StateMachineClass);
+}
 
 UStateMachine* UStateMachineExStatics::GuessStateMachine(UObject* WorldContextObject)
 {
@@ -29,6 +37,16 @@ UStateMachine* UStateMachineExStatics::GuessStateMachine(UObject* WorldContextOb
 
 			return StateMachine;
 		}
+	}
+
+	return nullptr;
+}
+
+UObject* UStateMachineExStatics::GuessCurrentState(UObject* WorldContextObject)
+{
+	if (auto StateMachine = Valid(GuessStateMachine(WorldContextObject)))
+	{
+		return StateMachine->CurrentState;
 	}
 
 	return nullptr;

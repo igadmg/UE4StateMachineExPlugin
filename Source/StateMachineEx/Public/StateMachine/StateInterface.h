@@ -22,6 +22,21 @@ class STATEMACHINEEX_API UStateInterface : public UInterface
 	GENERATED_BODY()
 };
 
+/**
+ State interface.
+ Implementing state interface class can be used as a state in state machine.
+ States have Enter/Exit functions executed when state machine enter or exit state
+ and Update function which is called every time State Machie is updated.
+
+ Sates are special deferred nodes in blueprint which can be connected any way blueprint nodes are connected.
+ States in Bluepinr Graph automaticaly use State Machine of their owning bluepinr class.
+
+ States are encapsulated logic blocks. They don't need to nowanything about their state machine.
+ They just execute some code on Enter/Exit or Update. If state wnat to finish itself it provide delegate events.
+ These events appear as exetuion pins on the Blueprin Graph and can be connected to other states or some blueprint code.
+ If state whants to exit itself someway it just call that delegate event.
+*/
+
 class STATEMACHINEEX_API IStateInterface
 {
 	GENERATED_BODY()

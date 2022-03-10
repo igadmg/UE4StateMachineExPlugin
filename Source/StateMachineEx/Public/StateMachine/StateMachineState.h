@@ -12,7 +12,7 @@ class STATEMACHINEEX_API UStateMachineState : public UState
 
 
 protected:
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(Category = "State", BlueprintReadOnly)
 	class UStateMachine* StateMachine;
 
 

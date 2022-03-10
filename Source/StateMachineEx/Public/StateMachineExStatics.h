@@ -14,15 +14,28 @@ class STATEMACHINEEX_API UStateMachineExStatics : public UBlueprintFunctionLibra
 
 
 public:
+	UFUNCTION(Category = "StateMachineEx", BlueprintCallable)
+	static class UStateMachine* SpawnStateMachine(UObject* Owner, TSubclassOf<class UStateMachine> StateMachineClass);
+
+	template <typename TStateMachine = class UStateMachine> static TStateMachine* SpawnStateMachine(UObject* Owner)
+	{
+		return Cast<TStateMachine>(SpawnStateMachine(Owner, TStateMachine::StaticClass()));
+	}
+
 	UFUNCTION(Category = "StateMachineEx", BlueprintPure, meta = (HidePin = "WorldContextObject", WorldContext = "WorldContextObject"))
 	static class UStateMachine* GuessStateMachine(UObject* WorldContextObject);
 
+	UFUNCTION(Category = "StateMachineEx", BlueprintPure, meta = (HidePin = "WorldContextObject", WorldContext = "WorldContextObject"))
+	static class UObject* GuessCurrentState(UObject* WorldContextObject);
+
+	/** Used to get last state from stat mcahine stack and switch to it. */
 	UFUNCTION(Category = "StateMachineEx", BlueprintCallable, meta = (HidePin = "WorldContextObject", WorldContext = "WorldContextObject"))
 	static void PushState(UObject* WorldContextObject);
 
+	/** Used to put current state to state machine stack */
 	UFUNCTION(Category = "StateMachineEx", BlueprintCallable, meta = (HidePin = "WorldContextObject", WorldContext = "WorldContextObject"))
 	static void PopState(UObject* WorldContextObject);
 
-	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject"))
+	UFUNCTION(Category = "StateMachineEx", BlueprintCallable, BlueprintInternalUseOnly, meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject"))
 	static class UObject* CreateStateObject(UObject* WorldContextObject, UClass* StateClass);
 };

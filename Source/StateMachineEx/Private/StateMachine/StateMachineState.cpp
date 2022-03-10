@@ -1,4 +1,5 @@
 #include "StateMachine/StateMachineState.h"
+#include "StateMachineExPrivatePCH.h"
 
 #include "StateMachine/StateMachine.h"
 

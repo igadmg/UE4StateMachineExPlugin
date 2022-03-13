@@ -169,8 +169,9 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 
 	ForEachOutputDelegate([this, &Compiler, StateObjectPin](auto Delegate) {
 		auto DelegateAndPins = FDelegateAndPins::FindDelegatePins(this, Delegate);
+		ensureMsgf(DelegateAndPins.IsValid(), TEXT("Failed to find delegate for function."));
 
-		auto CustomDelegateName = FName(*FString::Printf(TEXT("%s_%s"), *DelegateAndPins.Delegate->GetName(), *Compiler.GetGuid()));
+		auto CustomDelegateName = FName(*FString::Printf(TEXT("%s_%p"), *DelegateAndPins.Delegate->GetName(), DelegateAndPins.Delegate));
 		auto CustomEventNode = Compiler.SpawnIntermediateEventNode<UK2Node_CustomEvent>(DelegateAndPins.ExecPin, CustomDelegateName, Delegate->SignatureFunction);
 		{
 			FK2NodeCompilerHelper CustomEventCompiler(Compiler, Compiler.GetThenPin(CustomEventNode), DelegateAndPins.ExecPin);

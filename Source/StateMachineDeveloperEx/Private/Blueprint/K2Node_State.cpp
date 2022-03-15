@@ -1,5 +1,4 @@
 #include "Blueprint/K2Node_State.h"
-#include "StateMachineDeveloperExPrivatePCH.h"
 
 #include "Blueprint/K2NodeCompilerHelper.h"
 #include "Blueprint/K2NodeHelpers.h"
@@ -201,6 +200,17 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 	{
 		Compiler.ConnectPins(StateObjectPin, GetStatePin());
 	}
+}
+
+bool UK2Node_State::HasExternalDependencies(TArray<class UStruct*>* OptionalOutput) const
+{
+	const bool bResult = IsValid(StateClass);
+	if (bResult && OptionalOutput)
+	{
+		OptionalOutput->AddUnique(StateClass);
+	}
+
+	return Super::HasExternalDependencies(OptionalOutput) || bResult;
 }
 
 #if WITH_EDITOR

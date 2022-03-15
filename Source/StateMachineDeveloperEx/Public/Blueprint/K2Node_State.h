@@ -54,6 +54,8 @@ protected:
 	virtual void AllocateDefaultPins() override;
 	virtual void ExpandNode(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
 
+	virtual bool HasExternalDependencies(TArray<class UStruct*>* OptionalOutput = nullptr) const;
+
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

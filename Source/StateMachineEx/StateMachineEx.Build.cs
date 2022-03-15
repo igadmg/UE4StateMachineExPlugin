@@ -10,6 +10,7 @@ public class StateMachineEx : ModuleRules
 	{
 		bEnforceIWYU = true;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
+		PrivatePCHHeaderFile = "Private/StateMachineExPrivatePCH.h";
 
 
 		PublicIncludePaths.AddRange(new string[] {

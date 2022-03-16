@@ -11,9 +11,9 @@ class STATEMACHINEEX_API UStateMachineState : public UState
 	GENERATED_BODY()
 
 
-protected:
+public:
 	UPROPERTY(Category = "State", BlueprintReadOnly)
-	class UStateMachine* StateMachine;
+	class UStateMachine* InternalStateMachine;
 
 
 public:

@@ -45,20 +45,16 @@ UFunction* UK2Node_State::GetCreateStateObjectFunction() const
 
 void UK2Node_State::ForEachOutputDelegate(TFunction<void (FMulticastDelegateProperty*)> Predicate)
 {
-	for (TFieldIterator<FProperty> PropertyIt(StateClass); PropertyIt; ++PropertyIt)
-	{
-		if (auto AsMulticastDelegateProperty = Valid<FMulticastDelegateProperty>(*PropertyIt))
+	FK2NodeHelpers::ForEachProperty<FMulticastDelegateProperty>(StateClass, [&Predicate](auto Property) {
+		if (auto PropertyClass = Property->GetOwnerClass())
 		{
-			if (auto PropertyClass = AsMulticastDelegateProperty->GetOwnerClass())
-			{
-				// Expose only delegates declare in object implementing UStateInterface
-				if (!PropertyClass->ImplementsInterface(UStateInterface::StaticClass()))
-					continue;
+			// Expose only delegates declare in object implementing UStateInterface
+			if (!PropertyClass->ImplementsInterface(UStateInterface::StaticClass()))
+				return;
 
-				Predicate(AsMulticastDelegateProperty);
-			}
+			Predicate(Property);
 		}
-	}
+	});
 }
 
 FText UK2Node_State::GetTooltipText() const
@@ -166,6 +162,15 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 		Compiler.ConnectPins(StateObjectPin, GetStatePin());
 	}
 
+	for (auto SpawnVarPin : Pins)
+	{
+		if (SpawnVarPin->Direction != EEdGraphPinDirection::EGPD_Input
+			&& SpawnVarPin->LinkedTo.Num() == 0)
+			continue;
+
+		Compiler.ConnectSetVariable(SpawnVarPin, StateObjectPin);
+	}
+
 	ForEachOutputDelegate([this, &Compiler, StateObjectPin](auto Delegate) {
 		auto DelegateAndPins = FDelegateAndPins::FindDelegatePins(this, Delegate);
 		ensureMsgf(DelegateAndPins.IsValid(), TEXT("Failed to find delegate for function."));
@@ -174,7 +179,7 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 		auto CustomEventNode = Compiler.SpawnIntermediateEventNode<UK2Node_CustomEvent>(DelegateAndPins.ExecPin, CustomDelegateName, Delegate->SignatureFunction);
 		{
 			FK2NodeCompilerHelper CustomEventCompiler(Compiler, Compiler.GetThenPin(CustomEventNode), DelegateAndPins.ExecPin);
-			auto GuessCurrentState = CustomEventCompiler.SpawnIntermediateNode<UK2Node_CallFunction>(EXPAND_FUNCTION_NAME(UStateMachineExStatics, GuessCurrentState));
+			auto GuessCurrentState = CustomEventCompiler.SpawnIntermediateNode<UK2Node_CallFunction>(EXPAND_FUNCTION_NAME(UStateMachineExStatics, GuessCurrentStateInternal));
 			auto CurrentState = CustomEventCompiler.SpawnIntermediateNode<UK2Node_DynamicCast>(StateClass, GuessCurrentState->GetReturnValuePin());
 			CustomEventCompiler.SpawnIntermediateNode<UK2Node_CallFunction>(CurrentState->GetCastResultPin(), StateClass, GET_FUNCTION_NAME_CHECKED(IStateInterface, ExitState));
 
@@ -191,7 +196,7 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 		auto AddDelegateNode = Compiler.SpawnIntermediateNode<UK2Node_AddDelegate>(DelegateAndPins.Delegate, StateObjectPin, CustomEventNode->FindPin(UK2Node_Event::DelegateOutputName));
 	});
 
-	auto CallGetParentStateMachine = Compiler.SpawnIntermediateNode<UK2Node_CallFunction>(StateObjectPin, StateClass, GET_FUNCTION_NAME_CHECKED(IStateInterface, GetParentStateMachine));
+	auto CallGetParentStateMachine = Compiler.SpawnIntermediateNode<UK2Node_CallFunction>(StateObjectPin, StateClass, GET_FUNCTION_NAME_CHECKED(IStateInterface, GetStateMachine));
 	auto ParentStateMachinePin = CallGetParentStateMachine->GetReturnValuePin();
 	auto CallSwitchState = Compiler.SpawnIntermediateNode<UK2Node_CallFunction>(ParentStateMachinePin, EXPAND_FUNCTION_NAME(UStateMachine, SwitchState));
 	Compiler.ConnectPins(StateObjectPin, CallSwitchState->FindPin(TEXT("NewState")));

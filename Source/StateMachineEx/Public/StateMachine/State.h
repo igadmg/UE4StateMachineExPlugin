@@ -26,7 +26,7 @@ public:
 	EStateStatus Status = EStateStatus::Inactive;
 
 	UPROPERTY(Category = "State", VisibleInstanceOnly, BlueprintReadOnly)
-	class UStateMachine *ParentStateMachine;
+	class UStateMachine* StateMachine;
 
 	UPROPERTY(Category = "State", VisibleInstanceOnly, BlueprintReadWrite)
 	bool bPaused;
@@ -46,7 +46,7 @@ public:
 
 protected:
 	virtual UObject* ConstructState_Implementation(class UStateMachine* StateMachine) override;
-	virtual class UStateMachine* GetParentStateMachine_Implementation() const override { return ParentStateMachine; }
+	virtual class UStateMachine* GetStateMachine_Implementation() const override { return StateMachine; }
 	virtual uint8 GetStateId_Implementation() const override { return StateId; }
 	virtual EStateStatus GetStatus_Implementation() const override { return bPaused ? EStateStatus::Paused : Status; }
 	virtual void SetStatus_Implementation(EStateStatus InStatus) override { Status = InStatus; }

@@ -13,21 +13,21 @@ void UStateMachineState::EnterState_Implementation()
 {
 	Super::EnterState_Implementation();
 
-	StateMachine = NewObject<UStateMachine>(this);
+	InternalStateMachine = NewObject<UStateMachine>(this);
 }
 
 void UStateMachineState::TickState_Implementation(float DeltaSeconds)
 {
 	Super::TickState_Implementation(DeltaSeconds);
 
-	if (StateMachine)
-		StateMachine->Tick(DeltaSeconds);
+	if (InternalStateMachine)
+		InternalStateMachine->Tick(DeltaSeconds);
 }
 
 void UStateMachineState::ExitState_Implementation()
 {
-	if (StateMachine)
-		StateMachine->Shutdown();
+	if (InternalStateMachine)
+		InternalStateMachine->Shutdown();
 
 	Super::ExitState_Implementation();
 }

@@ -31,9 +31,9 @@ APawn* UPlayerStateState::GetOwningPlayerPawn() const
 
 APlayerState* UPlayerStateState::GetPlayerState() const
 {
-	if (IsValid(ParentStateMachine))
+	if (IsValid(StateMachine))
 	{
-		return Cast<APlayerState>(ParentStateMachine->GetOuter());
+		return Cast<APlayerState>(StateMachine->GetOuter());
 	}
 
 	return nullptr;

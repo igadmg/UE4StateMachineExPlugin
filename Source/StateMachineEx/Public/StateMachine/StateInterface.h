@@ -44,10 +44,10 @@ class STATEMACHINEEX_API IStateInterface
 
 public:
 	UFUNCTION(Category = "State Machine: State", BlueprintNativeEvent)
-	UObject* ConstructState(class UStateMachine *StateMachine);
+	UObject* ConstructState(class UStateMachine *InStateMachine);
 
 	UFUNCTION(Category = "State Machine: State", BlueprintCallable, BlueprintNativeEvent)
-	class UStateMachine* GetParentStateMachine() const;
+	class UStateMachine* GetStateMachine() const;
 
 	UFUNCTION(Category = "State Machine: State", BlueprintNativeEvent)
 	uint8 GetStateId() const;

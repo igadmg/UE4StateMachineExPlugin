@@ -30,10 +30,10 @@ APawn* UState::GetOwningPlayerPawn() const
 		: nullptr;
 }
 
-UObject* UState::ConstructState_Implementation(UStateMachine* StateMachine)
+UObject* UState::ConstructState_Implementation(UStateMachine* InStateMachine)
 {
-	UState* NewState = NewObject<UState>(StateMachine, GetClass());
-	NewState->ParentStateMachine = StateMachine;
+	UState* NewState = NewObject<UState>(InStateMachine, GetClass());
+	NewState->StateMachine = InStateMachine;
 
 	return NewState;
 }
@@ -42,7 +42,7 @@ void UState::EnterState_Implementation()
 {
 	Status = EStateStatus::Entered;
 
-	UE_LOG(LogStateMachineEx, Verbose, TEXT("Entering state %s State Machine %s"), *GetClass()->GetName(), *ParentStateMachine->GetClass()->GetName());
+	UE_LOG(LogStateMachineEx, Verbose, TEXT("Entering state %s State Machine %s"), *GetClass()->GetName(), *StateMachine->GetClass()->GetName());
 }
 
 void UState::TickState_Implementation(float DeltaTime)
@@ -54,11 +54,11 @@ void UState::ExitState_Implementation()
 {
 	Status = EStateStatus::Exited;
 
-	UE_LOG(LogStateMachineEx, Verbose, TEXT("Exiting state %s State Machine %s"), *GetClass()->GetName(), *ParentStateMachine->GetClass()->GetName());
+	UE_LOG(LogStateMachineEx, Verbose, TEXT("Exiting state %s State Machine %s"), *GetClass()->GetName(), *StateMachine->GetClass()->GetName());
 }
 
 void UState::Restart_Implementation()
 {
 	Status = EStateStatus::Restarted;
-	ParentStateMachine->SwitchStateByClass(GetClass());
+	StateMachine->SwitchStateByClass(GetClass());
 }

@@ -5,6 +5,9 @@
 #include "GameFramework/PlayerState.h"
 #include "StateMachine/StateMachine.h"
 
+#include "StateMachineEx.final.h"
+
+
 
 UPlayerStateState::UPlayerStateState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

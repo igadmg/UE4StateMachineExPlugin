@@ -15,11 +15,11 @@ class STATEMACHINEEX_API UStateMachineExStatics : public UBlueprintFunctionLibra
 
 public:
 	UFUNCTION(Category = "StateMachineEx", BlueprintCallable)
-	static class UStateMachine* SpawnStateMachine(UObject* Owner, TSubclassOf<class UStateMachine> StateMachineClass);
+	static class UStateMachine* SpawnStateMachine(UObject* Owner, TSubclassOf<class UStateMachine> StateMachineClass, bool bAutoTick = true);
 
-	template <typename TStateMachine = class UStateMachine> static TStateMachine* SpawnStateMachine(UObject* Owner)
+	template <typename TStateMachine = class UStateMachine> static TStateMachine* SpawnStateMachine(UObject* Owner, bool bAutoTick = true)
 	{
-		return Cast<TStateMachine>(SpawnStateMachine(Owner, TStateMachine::StaticClass()));
+		return Cast<TStateMachine>(SpawnStateMachine(Owner, TStateMachine::StaticClass(), bAutoTick));
 	}
 
 	UFUNCTION(Category = "StateMachineEx", BlueprintPure, BlueprintInternalUseOnly, meta = (HidePin = "WorldContextObject", WorldContext = "WorldContextObject"))

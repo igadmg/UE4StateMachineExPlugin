@@ -1,5 +1,6 @@
 #include "StateMachineEx.h"
 
+#include "StateMachineEx.final.h"
 
 
 #define LOCTEXT_NAMESPACE "FStateMachineExModule"

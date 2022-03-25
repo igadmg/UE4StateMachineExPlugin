@@ -1,48 +1,73 @@
 #include "StateMachineExStatics.h"
 
 #include "StateMachine/StateMachine.h"
-#include "StateMachine/StateMachineState.h"
 #include "StateMachine/State.h"
 
-#include "CoreEx.h"
+#include "StateMachineEx.final.h"
 
 
 
-UStateMachine* UStateMachineExStatics::SpawnStateMachine(UObject* Owner, TSubclassOf<UStateMachine> StateMachineClass)
+UStateMachine* UStateMachineExStatics::SpawnStateMachine(UObject* Owner, TSubclassOf<UStateMachine> StateMachineClass, bool bAutoTick)
 {
-	return NewObject<UStateMachine>(Owner, StateMachineClass);
+	if (auto StateMachine = NewObject<UStateMachine>(Owner, StateMachineClass))
+	{
+		StateMachine->AutoTickFunction.bCanEverTick = bAutoTick;
+
+		return StateMachine;
+	}
+
+	return nullptr;
 }
 
 UStateMachine* UStateMachineExStatics::GuessStateMachineInternal(UObject* WorldContextObject)
 {
-	if (auto StateMachine = Valid<UStateMachine>(WorldContextObject))
-		return StateMachine;
+	auto StateMachine = Valid<UStateMachine>(WorldContextObject);
 
-	if (auto StateMachineState = Valid<UStateMachineState>(WorldContextObject))
-		return StateMachineState->InternalStateMachine;
-
-	for (auto* ObjecProperty : TFieldRange<FObjectProperty>(WorldContextObject->GetClass()))
+	if (!IsValid(StateMachine))
 	{
-		if (ObjecProperty->PropertyClass == UStateMachine::StaticClass()
-			|| ObjecProperty->PropertyClass->IsChildOf(UStateMachine::StaticClass()))
+		for (auto* ObjecProperty : TFieldRange<FObjectProperty>(WorldContextObject->GetClass()))
 		{
-			auto StateMachine = Cast<UStateMachine>(ObjecProperty->GetPropertyValue_InContainer(WorldContextObject));
-
-			if (!IsValid(StateMachine))
+			if (ObjecProperty->PropertyClass->IsChildOf(UStateMachine::StaticClass()) && !ObjecProperty->HasAnyPropertyFlags(CPF_Transient))
 			{
-				StateMachine = NewObject<UStateMachine>(WorldContextObject, ObjecProperty->PropertyClass);
-				if (auto AsActor = Cast<AActor>(WorldContextObject))
-				{
-					UE_LOG_EX_WCO(LogStateMachineExCriticalErrors, Error, WorldContextObject, TEXT("Automatic StateMachine ticking is not yet supported."))
-					//AsActor->Tick
-				}
-			}
+				StateMachine = Cast<UStateMachine>(ObjecProperty->GetPropertyValue_InContainer(WorldContextObject));
 
-			return StateMachine;
+				if (!IsValid(StateMachine))
+				{
+					StateMachine = SpawnStateMachine(WorldContextObject, ObjecProperty->PropertyClass, true);
+				}
+	
+				ObjecProperty->SetPropertyValue_InContainer(WorldContextObject, StateMachine);
+				break;
+			}
 		}
 	}
 
-	return nullptr;
+	if (!IsValid(StateMachine))
+		return nullptr;
+
+	if (auto World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull))
+	{
+		if (StateMachine->AutoTickFunction.bCanEverTick)
+		{
+			if (auto AsActor = Cast<AActor>(WorldContextObject))
+			{
+				StateMachine->AutoTickFunction.TickGroup = AsActor->PrimaryActorTick.TickGroup;
+				StateMachine->AutoTickFunction.AddPrerequisite(AsActor, AsActor->PrimaryActorTick);
+			}
+			else if (auto AsActorComponent = Cast<UActorComponent>(WorldContextObject))
+			{
+				StateMachine->AutoTickFunction.TickGroup = AsActorComponent->PrimaryComponentTick.TickGroup;
+				StateMachine->AutoTickFunction.AddPrerequisite(AsActorComponent, AsActorComponent->PrimaryComponentTick);
+			}
+			//else if (auto AsWidget = Cast<UUserWidget>(WorldContextObject))
+			//{
+			//	StateMachine->AutoTickFunction.AddPrerequisite(AsActorComponent, AsActorComponent->PrimaryComponentTick);
+			//}
+			StateMachine->AutoTickFunction.RegisterTickFunction(World->PersistentLevel);
+		}
+	}
+
+	return StateMachine;
 }
 
 UObject* UStateMachineExStatics::GuessCurrentStateInternal(UObject* WorldContextObject)

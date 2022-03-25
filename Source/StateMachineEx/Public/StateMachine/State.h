@@ -25,7 +25,7 @@ public:
 	UPROPERTY(Category = "State", VisibleInstanceOnly, BlueprintReadOnly)
 	EStateStatus Status = EStateStatus::Inactive;
 
-	UPROPERTY(Category = "State", VisibleInstanceOnly, BlueprintReadOnly)
+	UPROPERTY(Category = "State", VisibleInstanceOnly, BlueprintReadOnly, Transient)
 	class UStateMachine* StateMachine;
 
 	UPROPERTY(Category = "State", VisibleInstanceOnly, BlueprintReadWrite)

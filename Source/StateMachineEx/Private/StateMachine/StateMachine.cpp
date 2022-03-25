@@ -3,7 +3,44 @@
 #include "StateMachine/StateInterface.h"
 #include "StateMachine/State.h"
 
+#include "StateMachineEx.final.h"
 
+
+template <typename RefType, typename AssignedType = RefType>
+TGuardValue<RefType, AssignedType> MakeGuardValue(RefType& ReferenceValue, const AssignedType& NewValue)
+{
+	return TGuardValue<RefType, AssignedType>(ReferenceValue, NewValue);
+}
+
+
+void FStateMachineTickFunction::ExecuteTick(float DeltaTime, enum ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent)
+{
+	//QUICK_SCOPE_CYCLE_COUNTER(FSkeletalMeshComponentEndPhysicsTickFunction_ExecuteTick);
+	//CSV_SCOPED_TIMING_STAT_EXCLUSIVE(Physics);
+
+	//TODO: add TimeDilation and other stuff here.
+	//FActorComponentTickFunction::ExecuteTickHelper(Target, /*bTickInEditor=*/ false, DeltaTime, TickType, [this](float DilatedTime)
+	if (IsValid(Target) && !Target->IsUnreachable())
+	{
+		auto IsAutoTickFunctionGuard = MakeGuardValue(Target->bIsAutoTickFunction, true);
+		Target->Tick(DeltaTime);
+	}//);
+}
+
+FString FStateMachineTickFunction::DiagnosticMessage()
+{
+	if (Target)
+	{
+		return Target->GetFullName() + TEXT("[Tick]");
+	}
+	return TEXT("<NULL>[Tick]");
+
+}
+
+FName FStateMachineTickFunction::DiagnosticContext(bool bDetailed)
+{
+	return FName(TEXT("StateMachineTickFunction"));
+}
 
 UStateMachine::UStateMachine(const FObjectInitializer &Initializer)
 	: Super(Initializer)
@@ -11,6 +48,15 @@ UStateMachine::UStateMachine(const FObjectInitializer &Initializer)
 	, CurrentState(nullptr)
 	, NextState(nullptr)
 {
+	AutoTickFunction.bCanEverTick = true;
+	AutoTickFunction.Target = this;
+}
+
+void UStateMachine::BeginDestroy()
+{
+	AutoTickFunction.UnRegisterTickFunction();
+
+	Super::BeginDestroy();
 }
 
 UWorld* UStateMachine::GetWorld() const
@@ -99,6 +145,20 @@ void UStateMachine::Reset_Implementation()
 
 void UStateMachine::Tick_Implementation(float DeltaSeconds)
 {
+#if WITH_EDITOR
+	if (bIsAutoTickFunction != AutoTickFunction.bCanEverTick)
+	{
+		if (!AutoTickFunction.bCanEverTick)
+		{
+			UE_LOG_EX(LogStateMachineExCriticalErrors, Error, TEXT("StateMchine is registered to Tick automatically but was ticked by hand"));
+		}
+		else
+		{
+			UE_LOG_EX(LogStateMachineExCriticalErrors, Error, TEXT("StateMchine is Tick by hand but was registered to tick automatically"));
+		}
+	}
+#endif
+
 	while (!IsValid(CurrentState))
 	{
 		if (!IsValid(NextState))
@@ -124,12 +184,19 @@ void UStateMachine::Tick_Implementation(float DeltaSeconds)
 	auto CurrentStateStatus = IStateInterface::Execute_GetStatus(CurrentState);
 	if (CurrentStateStatus == EStateStatus::Entered || CurrentStateStatus == EStateStatus::Updated)
 	{
+#if !UE_BUILD_SHIPPING
+		auto PrevCurrentState = CurrentState;
+#endif
+
 		IStateInterface::Execute_TickState(CurrentState, DeltaSeconds);
 
 #if !UE_BUILD_SHIPPING
-		if (CurrentState != nullptr && IStateInterface::Execute_GetStatus(CurrentState) != EStateStatus::Updated)
+		if (PrevCurrentState == CurrentState)
 		{
-			UE_LOG(LogStateMachineExCriticalErrors, Error, TEXT("State Machine %s UState::Tick base function was not called by %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
+			if (CurrentState != nullptr && IStateInterface::Execute_GetStatus(CurrentState) != EStateStatus::Updated)
+			{
+				UE_LOG(LogStateMachineExCriticalErrors, Error, TEXT("State Machine %s UState::Tick base function was not called by %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
+			}
 		}
 #endif
 	}

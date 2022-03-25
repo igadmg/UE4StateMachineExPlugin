@@ -8,6 +8,8 @@
 #include "Core.h"
 #include "Engine/World.h"
 
+#include "Kismet/GameplayStatics.h"
+
 
 //General Log
 DECLARE_LOG_CATEGORY_EXTERN(LogStateMachineEx, Log, All);

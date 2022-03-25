@@ -1,9 +1,9 @@
 #include "StateMachine/State.h"
 
 #include "StateMachine/StateMachine.h"
+#include "StateMachineExStatics.h"
 
-#include "Kismet/GameplayStatics.h"
-
+#include "StateMachineEx.final.h"
 
 
 UState::UState(const FObjectInitializer& ObjectInitializer)
@@ -52,6 +52,11 @@ void UState::TickState_Implementation(float DeltaTime)
 
 void UState::ExitState_Implementation()
 {
+	if (auto InternalStateMachine = Valid(UStateMachineExStatics::GuessStateMachineInternal(this)))
+	{
+		InternalStateMachine->AutoTickFunction.UnRegisterTickFunction();
+	}
+
 	Status = EStateStatus::Exited;
 
 	UE_LOG(LogStateMachineEx, Verbose, TEXT("Exiting state %s State Machine %s"), *GetClass()->GetName(), *StateMachine->GetClass()->GetName());

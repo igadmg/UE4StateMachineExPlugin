@@ -165,7 +165,7 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 	for (auto SpawnVarPin : Pins)
 	{
 		if (SpawnVarPin->Direction != EEdGraphPinDirection::EGPD_Input
-			&& SpawnVarPin->LinkedTo.Num() == 0)
+			|| SpawnVarPin->LinkedTo.Num() == 0)
 			continue;
 
 		Compiler.ConnectSetVariable(SpawnVarPin, StateObjectPin);

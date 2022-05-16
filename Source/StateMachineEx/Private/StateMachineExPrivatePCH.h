@@ -9,6 +9,9 @@
 #include "Engine/World.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "GuessExStatics.h"
+
+#include "CoreEx.h"
 
 
 //General Log

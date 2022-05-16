@@ -6,12 +6,6 @@
 #include "StateMachineEx.final.h"
 
 
-template <typename RefType, typename AssignedType = RefType>
-TGuardValue<RefType, AssignedType> MakeGuardValue(RefType& ReferenceValue, const AssignedType& NewValue)
-{
-	return TGuardValue<RefType, AssignedType>(ReferenceValue, NewValue);
-}
-
 
 void FStateMachineTickFunction::ExecuteTick(float DeltaTime, enum ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent)
 {
@@ -22,7 +16,9 @@ void FStateMachineTickFunction::ExecuteTick(float DeltaTime, enum ELevelTick Tic
 	//FActorComponentTickFunction::ExecuteTickHelper(Target, /*bTickInEditor=*/ false, DeltaTime, TickType, [this](float DilatedTime)
 	if (IsValid(Target) && !Target->IsUnreachable())
 	{
+#if WITH_EDITOR
 		auto IsAutoTickFunctionGuard = MakeGuardValue(Target->bIsAutoTickFunction, true);
+#endif
 		Target->Tick(DeltaTime);
 	}//);
 }

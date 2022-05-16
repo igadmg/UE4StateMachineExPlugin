@@ -27,10 +27,13 @@ public class StateMachineEx : ModuleRules
 				"Core",
 				"CoreUObject",
 				"Engine",
+				"UMG",
 			});
 
 		PublicDependencyModuleNames.AddRange(new string[] {
 				"CoreEx",
+				"ComponentEx",
+				"UnrealEngineEx",
 			});
 
 

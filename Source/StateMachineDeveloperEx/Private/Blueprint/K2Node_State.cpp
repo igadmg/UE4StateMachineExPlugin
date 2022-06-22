@@ -168,7 +168,7 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 			|| SpawnVarPin->LinkedTo.Num() == 0)
 			continue;
 
-		Compiler.ConnectSetVariable(SpawnVarPin, StateObjectPin);
+		Compiler.SetObjectProperty(StateObjectPin, SpawnVarPin);
 	}
 
 	ForEachOutputDelegate([this, &Compiler, StateObjectPin](auto Delegate) {

@@ -147,9 +147,11 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 		return;
 
 	// Create a call to factory the state object
-	auto CallCreateStateObject = Compiler.SpawnIntermediateNode<UK2Node_CallFunction>(EXPAND_FUNCTION_NAME(UStateMachineExStatics, CreateStateObject));
-	Compiler.ConnectPins(GetStateClassPin(), CallCreateStateObject->FindPin(PN_StateClass));
-	UEdGraphPin* StateObjectPin = CallCreateStateObject->GetReturnValuePin();
+	auto StateObjectPin = Compiler.SpawnIntermediateNode<UK2Node_CallFunction>(
+		EXPAND_FUNCTION_NAME(UStateMachineExStatics, CreateStateObject)
+		, PARAMETERS(
+			(TEXT("StateClass"), GetStateClassPin())
+		))->GetReturnValuePin();
 
 	auto ValidateProxyNode = Compiler.SpawnIntermediateNode<UK2Node_IfThenElse>(
 		Compiler.SpawnIsValidNode(StateObjectPin)->GetReturnValuePin());
@@ -179,9 +181,10 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 		auto CustomEventNode = Compiler.SpawnIntermediateEventNode<UK2Node_CustomEvent>(DelegateAndPins.ExecPin, CustomDelegateName, Delegate->SignatureFunction);
 		{
 			FK2NodeCompilerHelper CustomEventCompiler(Compiler, Compiler.GetThenPin(CustomEventNode), DelegateAndPins.ExecPin);
-			auto GuessCurrentState = CustomEventCompiler.SpawnIntermediateNode<UK2Node_CallFunction>(EXPAND_FUNCTION_NAME(UStateMachineExStatics, GuessCurrentStateInternal));
-			auto CurrentState = CustomEventCompiler.SpawnIntermediateNode<UK2Node_DynamicCast>(StateClass, GuessCurrentState->GetReturnValuePin());
-			CustomEventCompiler.SpawnIntermediateNode<UK2Node_CallFunction>(CurrentState->GetCastResultPin(), StateClass, GET_FUNCTION_NAME_CHECKED(IStateInterface, ExitState));
+
+			auto GuessCurrentStatePin = CustomEventCompiler.SpawnIntermediateNode<UK2Node_CallFunction>(EXPAND_FUNCTION_NAME(UStateMachineExStatics, GuessCurrentStateInternal))->GetReturnValuePin();
+			auto CurrentStatePin = CustomEventCompiler.SpawnIntermediateNode<UK2Node_DynamicCast>(StateClass, GuessCurrentStatePin)->GetCastResultPin();
+			CustomEventCompiler.SpawnIntermediateNode<UK2Node_CallFunction>(CurrentStatePin, StateClass, GET_FUNCTION_NAME_CHECKED(IStateInterface, ExitState));
 
 			for (auto OutputPin : DelegateAndPins.ParameterPins)
 			{
@@ -196,10 +199,14 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 		auto AddDelegateNode = Compiler.SpawnIntermediateNode<UK2Node_AddDelegate>(DelegateAndPins.Delegate, StateObjectPin, CustomEventNode->FindPin(UK2Node_Event::DelegateOutputName));
 	});
 
-	auto CallGetParentStateMachine = Compiler.SpawnIntermediateNode<UK2Node_CallFunction>(StateObjectPin, StateClass, GET_FUNCTION_NAME_CHECKED(IStateInterface, GetStateMachine));
-	auto ParentStateMachinePin = CallGetParentStateMachine->GetReturnValuePin();
-	auto CallSwitchState = Compiler.SpawnIntermediateNode<UK2Node_CallFunction>(ParentStateMachinePin, EXPAND_FUNCTION_NAME(UStateMachine, SwitchState));
-	Compiler.ConnectPins(StateObjectPin, CallSwitchState->FindPin(TEXT("NewState")));
+	auto ParentStateMachinePin = Compiler.SpawnIntermediateNode<UK2Node_CallFunction>(StateObjectPin
+		, StateClass, GET_FUNCTION_NAME_CHECKED(IStateInterface, GetStateMachine))->GetReturnValuePin();
+
+	auto CallSwitchState = Compiler.SpawnIntermediateNode<UK2Node_CallFunction>(ParentStateMachinePin
+		, EXPAND_FUNCTION_NAME(UStateMachine, SwitchState)
+		, PARAMETERS(
+			(TEXT("NewState"), StateObjectPin)
+		));
 
 	if (bExposeState)
 	{

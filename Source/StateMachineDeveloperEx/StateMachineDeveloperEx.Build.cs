@@ -8,7 +8,6 @@ public class StateMachineDeveloperEx : ModuleRules
 	public StateMachineDeveloperEx(ReadOnlyTargetRules Target)
 		: base(Target)
 	{
-		bEnforceIWYU = true;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		PrivatePCHHeaderFile = "Private/StateMachineDeveloperExPrivatePCH.h";
 

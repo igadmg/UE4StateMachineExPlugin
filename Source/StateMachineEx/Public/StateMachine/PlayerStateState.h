@@ -21,5 +21,5 @@ public:
 
 
 public:
-	UPlayerStateState(const FObjectInitializer& ObjectInitializer);
+	UPlayerStateState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 };

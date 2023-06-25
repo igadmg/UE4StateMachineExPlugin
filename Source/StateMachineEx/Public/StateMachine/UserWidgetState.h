@@ -42,6 +42,6 @@ public: /// IStateInterface
 
 
 public:
-	UUserWidgetState(const FObjectInitializer& ObjectInitializer);
+	UUserWidgetState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 };
 

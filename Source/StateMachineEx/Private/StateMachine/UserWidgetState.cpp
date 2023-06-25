@@ -61,7 +61,7 @@ void UUserWidgetState::TickState_Implementation(float DeltaSeconds)
 
 void UUserWidgetState::ExitState_Implementation()
 {
-	RemoveFromViewport();
+	RemoveFromParent();
 
 	Status = EStateStatus::Exited;
 

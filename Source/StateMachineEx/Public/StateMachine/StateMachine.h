@@ -94,7 +94,7 @@ public:
 
 
 public:
-	UStateMachine(const FObjectInitializer& ObjectInitializer);
+	UStateMachine(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	UObject* PrepareState(TSubclassOf<class UObject> NewStateClass);
 	UObject* SwitchStateByClass(TSubclassOf<class UObject> NewStateClass);

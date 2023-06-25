@@ -41,7 +41,7 @@ public:
 
 
 public:
-	UState(const FObjectInitializer& ObjectInitializer);
+	UState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 
 protected:

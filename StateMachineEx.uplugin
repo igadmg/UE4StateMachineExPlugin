@@ -23,7 +23,7 @@
 		{
 			"Name": "StateMachineDeveloperEx",
 			"Type": "UncookedOnly",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PreDefault"
 		}
 	],
 	"Plugins": [

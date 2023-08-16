@@ -28,7 +28,7 @@ public:
 	UFUNCTION(Category = "StateMachineEx", BlueprintPure, BlueprintInternalUseOnly, meta = (HidePin = "WorldContextObject", WorldContext = "WorldContextObject"))
 	static class UObject* GuessCurrentStateInternal(UObject* WorldContextObject);
 
-	/** Used to get last state from stat mcahine stack and switch to it. */
+	/** Used to get last state from state machine stack and switch to it. */
 	UFUNCTION(Category = "StateMachineEx", BlueprintCallable, meta = (HidePin = "WorldContextObject", WorldContext = "WorldContextObject"))
 	static void PushState(UObject* WorldContextObject);
 

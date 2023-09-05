@@ -1,7 +1,11 @@
 #include "StateMachine/State.h"
 
 #include "StateMachine/StateMachine.h"
+#include "InputObject.h"
 #include "StateMachineExStatics.h"
+
+#include "Engine/InputDelegateBinding.h"
+#include "GameFramework/Pawn.h"
 
 #include "StateMachineEx.final.h"
 
@@ -42,6 +46,20 @@ void UState::EnterState_Implementation()
 {
 	Status = EStateStatus::Entered;
 
+	if (UInputDelegateBinding::SupportsInputDelegate(GetClass()))
+	{
+		if (auto OwnerController = XX::GetController<APlayerController>(this))
+		{
+			if (OwnerController->IsLocalController())
+			{
+				if (!IsValid(InputObject))
+					InputObject = NewObject<UInputObject>(this);
+
+				InputObject->EnableInput(OwnerController);
+			}
+		}
+	}
+
 	UE_LOG(LogStateMachineEx, Verbose, TEXT("Entering state %s State Machine %s"), *GetClass()->GetName(), *StateMachine->GetClass()->GetName());
 }
 
@@ -55,6 +73,11 @@ void UState::ExitState_Implementation()
 	if (auto InternalStateMachine = Valid(UStateMachineExStatics::GuessStateMachineInternal(this)))
 	{
 		InternalStateMachine->AutoTickFunction.UnRegisterTickFunction();
+	}
+
+	if (IsValid(InputObject))
+	{
+		InputObject->DisableInput(XX::GetController<APlayerController>(this));
 	}
 
 	Status = EStateStatus::Exited;

@@ -26,10 +26,13 @@ public:
 	EStateStatus Status = EStateStatus::Inactive;
 
 	UPROPERTY(Category = "State", VisibleInstanceOnly, BlueprintReadOnly, Transient)
-	class UStateMachine* StateMachine;
+	class UStateMachine* StateMachine{};
 
 	UPROPERTY(Category = "State", VisibleInstanceOnly, BlueprintReadWrite)
 	bool bPaused;
+
+	UPROPERTY(DuplicateTransient)
+	TObjectPtr<class UInputObject> InputObject{};
 
 
 public:

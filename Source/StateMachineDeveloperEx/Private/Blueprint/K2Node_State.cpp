@@ -203,7 +203,7 @@ void UK2Node_State::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph
 		, StateClass, GET_FUNCTION_NAME_CHECKED(IStateInterface, GetStateMachine))->GetReturnValuePin();
 
 	auto CallSwitchState = Compiler.SpawnIntermediateNode<UK2Node_CallFunction>(ParentStateMachinePin
-		, EXPAND_FUNCTION_NAME(UStateMachine, SwitchState)
+		, EXPAND_FUNCTION_NAME(UStateMachine, K2Node_EnterState)
 		, PARAMETERS(
 			(TEXT("NewState"), StateObjectPin)
 		));

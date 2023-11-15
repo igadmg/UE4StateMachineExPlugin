@@ -108,25 +108,32 @@ UObject* UStateMachine::SwitchState(UObject* NewState)
 
 	if (bImmediateStateChange || bCurrentStateWasExitedBefore)
 	{
-		if (IsValid(NextState))
-		{
-			CurrentState = NextState;
-			NextState = nullptr;
-
-			UE_LOG(LogStateMachineEx, Verbose, TEXT("State Machine %s entering state %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
-
-			IStateInterface::Execute_EnterState(CurrentState);
-
-#if !UE_BUILD_SHIPPING
-			if (CurrentState != nullptr && IStateInterface::Execute_GetStatus(CurrentState) != EStateStatus::Entered)
-			{
-				UE_LOG(LogStateMachineExCriticalErrors, Error, TEXT("State Machine %s UState::Enter base function was not called by %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
-			}
-#endif
-		}
+		K2Node_EnterState(NextState);
 	}
 
 	return NewState;
+}
+
+UObject* UStateMachine::K2Node_EnterState(UObject* NewState)
+{
+	if (!IsValid(NewState))
+		return nullptr;
+
+	CurrentState = NewState;
+	NextState = nullptr;
+
+	UE_LOG(LogStateMachineEx, Verbose, TEXT("State Machine %s entering state %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
+
+	IStateInterface::Execute_EnterState(CurrentState);
+
+#if !UE_BUILD_SHIPPING
+	if (CurrentState != nullptr && IStateInterface::Execute_GetStatus(CurrentState) != EStateStatus::Entered)
+	{
+		UE_LOG(LogStateMachineExCriticalErrors, Error, TEXT("State Machine %s UState::Enter base function was not called by %s"), *GetClass()->GetName(), *CurrentState->GetClass()->GetName());
+	}
+#endif
+
+	return CurrentState;
 }
 
 void UStateMachine::Restart()

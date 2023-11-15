@@ -92,6 +92,9 @@ public:
 	UFUNCTION(Category = "State Machine", BlueprintCallable)
 	UObject* SwitchState(class UObject* NewState);
 
+	UFUNCTION(Category = "State Machine", BlueprintCallable, BlueprintInternalUseOnly)
+	UObject* K2Node_EnterState(class UObject* NewState);
+
 
 public:
 	UStateMachine(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());

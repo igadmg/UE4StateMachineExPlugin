@@ -38,4 +38,7 @@ public:
 
 	UFUNCTION(Category = "StateMachineEx", BlueprintCallable, BlueprintInternalUseOnly, meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject"))
 	static class UObject* CreateStateObject(UObject* WorldContextObject, UClass* StateClass);
+
+	UFUNCTION(Category = "StateMachineEx", BlueprintCallable, meta = (WorldContext = "WorldContextObject", DeterminesOutputType="StateClass"))
+	static class UObject* EmbedStateObject(UObject* WorldContextObject, UClass* StateClass);
 };

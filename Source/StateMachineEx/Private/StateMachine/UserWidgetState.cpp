@@ -12,10 +12,29 @@ UUserWidgetState::UUserWidgetState(const FObjectInitializer& ObjectInitializer)
 {
 }
 
+#define UE_LOGFMT_PREFIX(WCO, Format) \
+	"{WorldName}> {NetMode}[{NetRole}] {ObjectName} {Function}: " TEXT(Format), \
+		("WorldName", ::GetWorldName(this)), \
+		("NetMode", ::GetNetMode(this)), \
+		("NetRole", ::GetNetRole(this)),\
+		("ObjectName", this->GetName()), \
+		("Function", UTF8_TO_TCHAR(__FUNCTION__))
+
+#define UE_LOGFMT_PREFIXED(CategoryName, Verbosity, Format, ...) \
+	UE_LOGFMT(CategoryName, Verbosity, UE_LOGFMT_PREFIX(this, Format), ##__VA_ARGS__)
+
+#define UE_LOGFMT_PREFIXED_WCO(CategoryName, Verbosity, WorldContextObject, Format, ...) \
+	UE_LOGFMT(CategoryName, Verbosity, UE_LOGFMT_PREFIX(WorldContextObject, Format), ##__VA_ARGS__)
+
+
 UObject* UUserWidgetState::ConstructState_Implementation(UStateMachine* InStateMachine)
 {
 	auto Controller = XX::GetController<APlayerController>(InStateMachine);
-	if (!IsValid(Controller)) Controller = XX::GetLocalPlayerController(InStateMachine);
+	if (!IsValid(Controller))
+	{
+		UE_LOGFMT_PREFIXED(LogStateMachineEx, Warning, "Fallback to using Local Player Controller.");
+		Controller = XX::GetLocalPlayerController(InStateMachine);
+	}
 
 	ensure(IsValid(Controller));
 

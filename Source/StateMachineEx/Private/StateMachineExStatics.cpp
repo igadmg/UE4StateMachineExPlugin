@@ -6,7 +6,6 @@
 #include "StateMachineEx.final.h"
 
 
-
 UStateMachine* UStateMachineExStatics::SpawnStateMachine(UObject* Owner, TSubclassOf<UStateMachine> StateMachineClass, bool bAutoTick)
 {
 	if (auto StateMachine = NewObject<UStateMachine>(Owner, StateMachineClass))
@@ -122,4 +121,19 @@ UObject* UStateMachineExStatics::CreateStateObject(UObject* WorldContextObject, 
 	}
 
 	return StateMachine->PrepareState(StateClass);
+}
+
+UObject* UStateMachineExStatics::EmbedStateObject(UObject* WorldContextObject, UClass* StateClass)
+{
+	// Other option is to find outer state machine, but it seems not right to use it, becuase embedded state is not executed by state machine.
+	// UStateMachine* StateMachine = WorldContextObject->GetTypedOuter<UStateMachine>();
+	// if (auto State = IStateInterface::Execute_ConstructState(GetMutableDefault<UObject>(StateClass), StateMachine))
+	if (auto State = NewObject<UObject>(WorldContextObject, StateClass))
+	{
+		IStateInterface::Execute_EnterState(State);
+
+		return State;
+	}
+
+	return nullptr;
 }

@@ -45,7 +45,7 @@ UFunction* UK2Node_State::GetCreateStateObjectFunction() const
 
 void UK2Node_State::ForEachOutputDelegate(TFunction<void (FMulticastDelegateProperty*)> Predicate)
 {
-	FK2NodeHelpers::ForEachProperty<FMulticastDelegateProperty>(StateClass, [&Predicate](auto Property) {
+	ex(*StateClass).ForEachOutputDelegate([&Predicate](auto Property) {
 		if (auto PropertyClass = Property->GetOwnerClass())
 		{
 			// Expose only delegates declare in object implementing UStateInterface

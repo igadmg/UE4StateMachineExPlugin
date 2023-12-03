@@ -5,6 +5,8 @@
 #include "State.generated.h"
 
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FStateNotifyDelegate, class UState*);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FStateNotifyTickDelegate, class UState*, float);
 
 UCLASS(abstract, blueprintable, BlueprintType)
 class STATEMACHINEEX_API UState
@@ -45,6 +47,12 @@ public:
 
 public:
 	UState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+
+public:
+	FStateNotifyDelegate OnStateEnter;
+	FStateNotifyTickDelegate OnStateTick;
+	FStateNotifyDelegate OnStateExit;
 
 
 protected:

@@ -12,7 +12,6 @@ class STATEMACHINEEX_API UStateMachineExStatics : public UBlueprintFunctionLibra
 	GENERATED_BODY()
 
 
-
 public:
 	UFUNCTION(Category = "StateMachineEx", BlueprintCallable)
 	static class UStateMachine* SpawnStateMachine(UObject* Owner, TSubclassOf<class UStateMachine> StateMachineClass, bool bAutoTick = true);

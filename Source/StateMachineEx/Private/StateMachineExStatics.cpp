@@ -125,14 +125,20 @@ UObject* UStateMachineExStatics::CreateStateObject(UObject* WorldContextObject, 
 
 UObject* UStateMachineExStatics::EmbedStateObject(UObject* WorldContextObject, UClass* StateClass)
 {
-	// Other option is to find outer state machine, but it seems not right to use it, becuase embedded state is not executed by state machine.
-	// UStateMachine* StateMachine = WorldContextObject->GetTypedOuter<UStateMachine>();
-	// if (auto State = IStateInterface::Execute_ConstructState(GetMutableDefault<UObject>(StateClass), StateMachine))
-	if (auto State = NewObject<UObject>(WorldContextObject, StateClass))
+	if (auto OwnerState = Valid<UState>(WorldContextObject))
 	{
-		IStateInterface::Execute_EnterState(State);
+		// Other option is to find outer state machine, but it seems not right to use it, becuase embedded state is not executed by state machine.
+		// UStateMachine* StateMachine = WorldContextObject->GetTypedOuter<UStateMachine>();
+		// if (auto State = IStateInterface::Execute_ConstructState(GetMutableDefault<UObject>(StateClass), StateMachine))
+		if (auto State = NewObject<UObject>(WorldContextObject, StateClass))
+		{
+			IStateInterface::Execute_EnterState(State);
 
-		return State;
+			OwnerState->OnStateTick.AddLambda([State](UState* OwnerState, float DeltaSeconds) { IStateInterface::Execute_TickState(State, DeltaSeconds); });
+			OwnerState->OnStateExit.AddLambda([State](UState* OwnerState) { IStateInterface::Execute_ExitState(State); });
+
+			return State;
+		}
 	}
 
 	return nullptr;

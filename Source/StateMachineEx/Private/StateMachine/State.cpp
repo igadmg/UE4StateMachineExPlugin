@@ -53,11 +53,15 @@ void UState::EnterState_Implementation()
 	}
 
 	UE_LOG(LogStateMachineEx, Verbose, TEXT("Entering state %s State Machine %s"), *GetClass()->GetName(), *StateMachine->GetClass()->GetName());
+
+	OnStateEnter.Broadcast(this);
 }
 
 void UState::TickState_Implementation(float DeltaTime)
 {
 	Status = EStateStatus::Updated;
+
+	OnStateTick.Broadcast(this, DeltaTime);
 }
 
 void UState::ExitState_Implementation()
@@ -67,9 +71,25 @@ void UState::ExitState_Implementation()
 		InternalStateMachine->AutoTickFunction.UnRegisterTickFunction();
 	}
 
+	OnStateExit.Broadcast(this);
+
 	if (UInputDelegateBinding::SupportsInputDelegate(GetClass()))
 	{
 		UUnrealEngineExStatics::DisableInput(this, XX::GetController<APlayerController>(this), InputComponent);
+	}
+
+	// TODO: optimize that
+	for (auto* Property : TFieldRange<FObjectProperty>(GetClass()))
+	{
+		static FName MD_StateMachineCleanup("SM_Cleanup");
+		if (Property->HasMetaData(MD_StateMachineCleanup))
+		{
+			if (auto Object = Property->GetPropertyValue_InContainer(this))
+			{
+				Property->SetPropertyValue_InContainer(this, nullptr);
+				Object->ConditionalBeginDestroy();
+			}
+		}
 	}
 
 	Status = EStateStatus::Exited;

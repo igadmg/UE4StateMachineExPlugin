@@ -134,8 +134,11 @@ UObject* UStateMachineExStatics::EmbedStateObject(UObject* WorldContextObject, U
 		{
 			IStateInterface::Execute_EnterState(State);
 
-			OwnerState->OnStateTick.AddLambda([State](UState* OwnerState, float DeltaSeconds) { IStateInterface::Execute_TickState(State, DeltaSeconds); });
-			OwnerState->OnStateExit.AddLambda([State](UState* OwnerState) { IStateInterface::Execute_ExitState(State); });
+			OwnerState->OnStateTick.AddWeakLambda(State, [State](UState* OwnerState, float DeltaSeconds) { IStateInterface::Execute_TickState(State, DeltaSeconds); });
+			OwnerState->OnStateExit.AddWeakLambda(State, [State](UState* OwnerState) {
+				IStateInterface::Execute_ExitState(State);
+				State->ConditionalBeginDestroy();
+			});
 
 			return State;
 		}
